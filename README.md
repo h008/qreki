@@ -36,7 +36,7 @@ fn main(){
     // 得られた旧暦が属する月が閏月か
     let is_leap=qreki_ymd.ql;
     // 六曜
-    let rokuyou=qreki.rokuyou();
+    let rokuyou=qreki.qr;
     println!(
         "西暦{}年{}月{}日は旧暦{}年{}月{}日{}です。",
         year,month,day,qyear,qmonth,qday,rokuyou

@@ -4,47 +4,46 @@
 use chrono::{Datelike, Local, NaiveDate};
 use std::f64::consts::PI;
 
+
 #[derive(Debug)]
 pub struct Qreki {
     pub qy: i32,
     pub qm: u32,
     pub qd: u32,
     pub ql: bool,
+    pub qr: &'static str
 }
 
 impl Qreki {
     pub fn new() -> Qreki {
         let date = Local::today().naive_local();
-        let (qy, qm, qd, ql) = calc_kyureki(date);
+        let (qy, qm, qd, ql,qr) = calc_kyureki(date);
         Qreki {
             qy: qy,
             qm: qm,
             qd: qd,
             ql: ql,
+            qr:qr
         }
     }
     pub fn from_ymd(year: i32, month: u32, day: u32) -> Qreki {
         let date: NaiveDate = NaiveDate::from_ymd(year, month, day);
-        let (qy, qm, qd, ql) = calc_kyureki(date);
+        let (qy, qm, qd, ql,qr) = calc_kyureki(date);
         Qreki {
             qy: qy,
             qm: qm,
             qd: qd,
             ql: ql,
+            qr: qr
         }
     }
 
-    pub fn rokuyou(&self) -> &'static str {
-        let roku = ["先勝", "友引", "先負", "仏滅", "大安", "赤口"];
-        let x = ((self.qm + self.qd - 2) % 6) as usize;
-        roku[x]
-    }
 }
 
 const K: f64 = PI / 180.0;
 const TZ: f64 = 9.0 / 24.0; //JST
 
-fn calc_kyureki(dt: NaiveDate) -> (i32, u32, u32, bool) {
+fn calc_kyureki(dt: NaiveDate) -> (i32, u32, u32, bool,&'static str) {
     let tm0 = dt.num_days_from_ce() as f64 + 1721424.0;
     let mut chu: [[f64; 2]; 4] = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0], [0.0, 0.0]];
     chu[0] = calc_tm(tm0, 90.0);
@@ -110,17 +109,16 @@ fn calc_kyureki(dt: NaiveDate) -> (i32, u32, u32, bool) {
             i -= 1;
         }
     }
-    println!("{}", i);
-    println!("{}", state);
-    let kyureki_m = m[i][0] as u32;
-    let kyureki_lap = m[i][1] > 0;
-    let kyureki_d = tm0 - m[i][2] as f64 + 1.0;
+    let qm = m[i][0] as u32;
+    let ql = m[i][1] > 0;
+    let qd = (tm0 - m[i][2] as f64 + 1.0) as u32;
     let d = NaiveDate::from_num_days_from_ce((tm0 - 1721424.0) as i32);
-    let mut kyureki_y = d.year();
-    if kyureki_m > 9 && kyureki_m as u32 > d.month() {
-        kyureki_y -= 1;
+    let mut qy = d.year();
+    if qm > 9 && qm > d.month() {
+        qy -= 1;
     }
-    return (kyureki_y, kyureki_m, kyureki_d as u32, kyureki_lap);
+    let qr = getrokuyou(qm,qd );
+    return (qy, qm, qd , ql,qr);
 }
 
 fn calc_tm(tm: f64, deg: f64) -> [f64; 2] {
@@ -308,6 +306,11 @@ fn calc_saku(tm: f64) -> f64 {
     }
     tm2 + tm1 + TZ
 }
+     fn getrokuyou(qm:u32,qd:u32) -> &'static str {
+        let roku = ["先勝", "友引", "先負", "仏滅", "大安", "赤口"];
+        let x = ((qm + qd - 2) % 6) as usize;
+        roku[x]
+    }
 
 #[cfg(test)]
 mod tests {
@@ -352,7 +355,7 @@ mod tests {
                 qlstr,
                 qmstr,
                 qdaystr,
-                qreki.rokuyou()
+                qreki.qr
             );
             assert_eq!(awkstr.replace(" ", "").trim(), ruststr.replace(" ", ""));
             date = date + Duration::days(1);
