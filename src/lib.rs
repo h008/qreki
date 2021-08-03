@@ -2,10 +2,11 @@
 /// # 旧暦計算プログラム
 ///  
 use chrono::{Datelike, Local, NaiveDate};
+use serde::{Serialize,Deserialize};
 use std::f64::consts::PI;
 
 
-#[derive(Debug)]
+#[derive(Debug,Serialize,Deserialize)]
 pub struct Qreki {
     pub qy: i32,
     pub qm: u32,
